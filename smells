@@ -1,1 +1,2 @@
 Question 1: This is a repeated statement. Extract Method would fix this code smell.
+Question 3: This is feature envy. Moving it to the other class would fix this code smell.
