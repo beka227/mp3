@@ -1,2 +1,63 @@
 Question 1: This is a repeated statement. Extract Method would fix this code smell.
 Question 3: This is feature envy. Moving it to the other class would fix this code smell.
+Question 4: The repeated code can be made into a for loop instead of a series of if statements.
+Question 6: Extract Method can be used to refactor the repeated statements.
+
+
+Question 4 Test Class:
+package jenkins.model;
+
+import hudson.model.User;
+import hudson.security.HudsonPrivateSecurityRealm;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
+
+public class idFromFilenameTest {
+    IdStrategy.CaseSensitive myObject;
+    @Rule public JenkinsRule j = new JenkinsRule();
+
+
+    @BeforeClass
+    public void testSetup() {
+        myObject = new IdStrategy.CaseSensitive();
+    }
+    @Test
+    public void dollarSign() {
+        j.jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(true, false, null){
+            @Override
+            public IdStrategy getUserIdStrategy() {
+                return new IdStrategy.CaseSensitive();
+            }
+        });
+        User user = User.get("b");
+        User user2 = User.get("a");
+        assertNotSame("Users should not have the same id.", user.getId(), user2.getId());
+        assertEquals("b", User.idStrategy().keyFor(user.getId()));
+        assertEquals("b", User.idStrategy().filenameOf(user.getId()));
+        assertEquals("a", User.idStrategy().keyFor(user2.getId()));
+        assertEquals("$0061", User.idStrategy().filenameOf(user2.getId()));
+        assertEquals(user.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user.getId())));
+        assertEquals(user2.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user2.getId())));
+    }
+
+    @Test
+    public void tooMuch() {
+        j.jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(true, false, null){
+            @Override
+            public IdStrategy getUserIdStrategy() {
+                return new IdStrategy.CaseSensitive();
+            }
+        });
+        User user = User.get("b");
+        User user2 = User.get("a");
+        assertEquals("b", User.idStrategy().keyFor(user.getId()));
+        assertEquals("b", User.idStrategy().filenameOf(user.getId()));
+        assertEquals("a", User.idStrategy().keyFor(user2.getId()));
+        assertEquals("$00610", User.idStrategy().filenameOf(user2.getId()));
+        assertEquals(user.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user.getId())));
+        assertEquals(user2.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user2.getId())));
+    }
+
+}
