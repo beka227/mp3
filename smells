@@ -1,7 +1,7 @@
 Question 1: This is a repeated statement. Extract Method would fix this code smell.
 Question 3: This is feature envy. Moving it to the other class would fix this code smell.
 Question 4: The repeated code can be made into a for loop instead of a series of if statements.
-Question 6: Extract Method can be used to refactor the repeated statements.
+Question 6: Extract Method can be used to refactor the repeated statements. I used this in JenkinsTest.java and extracted the method "getWebClient".
 
 
 Question 4 Test Class:

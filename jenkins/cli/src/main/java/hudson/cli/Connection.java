@@ -42,16 +42,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.security.AlgorithmParameterGenerator;
-import java.security.GeneralSecurityException;
-import java.security.Key;
-import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.PublicKey;
-import java.security.Signature;
+import java.security.*;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.X509EncodedKeySpec;
 
 public class Connection {
@@ -153,9 +147,9 @@ public class Connection {
             AlgorithmParameterGenerator paramGen = AlgorithmParameterGenerator.getInstance("DH");
             paramGen.init(keySize);
 
-            KeyPairGenerator dh = KeyPairGenerator.getInstance("DH");
-            dh.initialize(paramGen.generateParameters().getParameterSpec(DHParameterSpec.class));
-            keyPair = dh.generateKeyPair();
+            java.security.spec.AlgorithmParameterSpec params = paramGen.generateParameters().getParameterSpec(DHParameterSpec.class);
+
+            keyPair = generateKeyPairWithSpec(params);
 
             // send a half and get a half
             writeKey(keyPair.getPublic());
@@ -163,9 +157,9 @@ public class Connection {
         } else {
             otherHalf = KeyFactory.getInstance("DH").generatePublic(readKey());
 
-            KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("DH");
-            keyPairGen.initialize(((DHPublicKey) otherHalf).getParams());
-            keyPair = keyPairGen.generateKeyPair();
+            java.security.spec.AlgorithmParameterSpec params = ((DHPublicKey) otherHalf).getParams();
+
+            keyPair = generateKeyPairWithSpec(params);
 
             // send a half and get a half
             writeKey(keyPair.getPublic());
@@ -176,6 +170,14 @@ public class Connection {
         ka.doPhase(otherHalf, true);
 
         return ka;
+    }
+
+    private KeyPair generateKeyPairWithSpec(AlgorithmParameterSpec params) throws NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+        KeyPair keyPair;
+        KeyPairGenerator dh = KeyPairGenerator.getInstance("DH");
+        dh.initialize(params);
+        keyPair = dh.generateKeyPair();
+        return keyPair;
     }
 
     /**
